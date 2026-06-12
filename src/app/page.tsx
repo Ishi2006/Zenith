@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import { Navbar } from "@/components/layout/navbar";
 import { GlassCard } from "@/components/ui/glass-card";
+import { EarthGlobe } from "@/components/globe/earth-globe";
+import { useMissionData } from "@/hooks/useMissionData";
 
 // --- STARRY BACKGROUND COMPONENT ---
 function StarryBackground() {
@@ -166,150 +168,9 @@ function AnimatedCounter({ value, duration = 2 }: { value: number; duration?: nu
   return <span ref={ref}>{count.toLocaleString()}</span>;
 }
 
-// --- 3D EARTH GLOBE SIMULATION COMPONENT ---
-function EarthGlobe() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-
-  const springConfig = { stiffness: 100, damping: 20 };
-  const rotateX = useSpring(useTransform(mouseY, [-300, 300], [15, -15]), springConfig);
-  const rotateY = useSpring(useTransform(mouseX, [-300, 300], [-15, 15]), springConfig);
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left - rect.width / 2;
-      const y = e.clientY - rect.top - rect.height / 2;
-      mouseX.set(x);
-      mouseY.set(y);
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-    };
-  }, [mouseX, mouseY]);
-
-  return (
-    <div ref={containerRef} className="relative w-72 h-72 sm:w-96 sm:h-96 md:w-[450px] md:h-[450px] flex items-center justify-center select-none">
-      {/* Atmosphere Glow */}
-      <div className="absolute inset-0 rounded-full bg-radial from-status-accent/15 via-primary/5 to-transparent blur-2xl scale-110 pointer-events-none" />
-      <div className="absolute inset-0 rounded-full border border-status-accent/20 shadow-[0_0_50px_rgba(0,229,255,0.15)] pointer-events-none scale-105" />
-
-      {/* Orbit paths */}
-      <svg className="absolute inset-[-40px] w-[calc(100%+80px)] h-[calc(100%+80px)] pointer-events-none" viewBox="0 0 100 100">
-        {/* LEO Orbit */}
-        <ellipse
-          cx="50"
-          cy="50"
-          rx="47"
-          ry="18"
-          fill="none"
-          stroke="rgba(0, 229, 255, 0.2)"
-          strokeWidth="0.25"
-          strokeDasharray="2 3"
-          className="origin-center animate-orbit-rotate"
-        />
-        {/* MEO Orbit */}
-        <ellipse
-          cx="50"
-          cy="50"
-          rx="52"
-          ry="32"
-          fill="none"
-          stroke="rgba(139, 92, 246, 0.25)"
-          strokeWidth="0.25"
-          className="origin-center animate-orbit-rotate-reverse"
-        />
-      </svg>
-
-      {/* Interactive Rotatable Globe */}
-      <motion.div
-        style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
-        className="w-full h-full rounded-full relative overflow-hidden bg-gradient-to-br from-[#0c1435] via-[#050816] to-[#01030a] shadow-[inset_-30px_-30px_70px_rgba(0,0,0,0.95),inset_20px_20px_50px_rgba(255,255,255,0.08)] border border-white/10"
-      >
-        {/* Repeating grid representation of earth landmass */}
-        <div className="absolute inset-0 opacity-40 bg-[linear-gradient(to_right,rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:16px_16px]" />
-
-        {/* Dynamic sliding landmass */}
-        <motion.div
-          animate={{ x: [0, -1000] }}
-          transition={{ repeat: Infinity, duration: 40, ease: "linear" }}
-          className="absolute inset-0 flex w-[2000px] h-full pointer-events-none"
-        >
-          {/* Mock Futuristic Map Structure */}
-          <div className="w-[1000px] h-full relative opacity-60">
-            <svg viewBox="0 0 1000 400" className="w-full h-full fill-status-accent/25">
-              {/* Simplistic stylized map paths for Sci-Fi rendering */}
-              <rect x="150" y="80" width="160" height="120" rx="30" />
-              <rect x="420" y="50" width="220" height="160" rx="40" />
-              <rect x="700" y="120" width="180" height="140" rx="35" />
-              <rect x="250" y="240" width="100" height="90" rx="20" />
-              <circle cx="100" cy="180" r="40" />
-              <circle cx="340" cy="100" r="50" />
-              <circle cx="580" cy="190" r="60" />
-              <circle cx="820" cy="90" r="45" />
-            </svg>
-          </div>
-          <div className="w-[1000px] h-full relative opacity-60">
-            <svg viewBox="0 0 1000 400" className="w-full h-full fill-status-accent/25">
-              <rect x="150" y="80" width="160" height="120" rx="30" />
-              <rect x="420" y="50" width="220" height="160" rx="40" />
-              <rect x="700" y="120" width="180" height="140" rx="35" />
-              <rect x="250" y="240" width="100" height="90" rx="20" />
-              <circle cx="100" cy="180" r="40" />
-              <circle cx="340" cy="100" r="50" />
-              <circle cx="580" cy="190" r="60" />
-              <circle cx="820" cy="90" r="45" />
-            </svg>
-          </div>
-        </motion.div>
-
-        {/* Terminator line (Day/Night dividing gradient) */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-black/40 to-black/90 pointer-events-none" />
-
-        {/* Atmosphere rim light overlay */}
-        <div className="absolute inset-0 shadow-[inset_15px_15px_30px_rgba(0,229,255,0.25),inset_-15px_-15px_30px_rgba(0,0,0,0.85)] rounded-full pointer-events-none" />
-      </motion.div>
-
-      {/* Orbiting Satellite 1 marker */}
-      <motion.div
-        animate={{
-          rotate: 360,
-        }}
-        transition={{ repeat: Infinity, duration: 25, ease: "linear" }}
-        className="absolute w-[calc(100%+30px)] h-[calc(100%+30px)] pointer-events-none origin-center"
-      >
-        <div className="absolute top-1/2 left-0 -translate-y-1/2 flex flex-col items-center">
-          <div className="w-2.5 h-2.5 rounded-full bg-status-accent shadow-[0_0_10px_var(--status-accent)] animate-pulse" />
-          <span className="font-mono text-[8px] text-status-accent mt-1 bg-bg-void/80 border border-status-accent/30 px-1 rounded">
-            ISS-MOCK
-          </span>
-        </div>
-      </motion.div>
-
-      {/* Orbiting Satellite 2 marker (Counter rotate) */}
-      <motion.div
-        animate={{
-          rotate: -360,
-        }}
-        transition={{ repeat: Infinity, duration: 35, ease: "linear" }}
-        className="absolute w-[calc(100%+60px)] h-[calc(100%+60px)] pointer-events-none origin-center"
-      >
-        <div className="absolute top-1/4 right-0 -translate-y-1/2 flex flex-col items-center">
-          <div className="w-2.5 h-2.5 rounded-full bg-primary-vivid shadow-[0_0_10px_var(--primary-vivid)] animate-pulse" />
-          <span className="font-mono text-[8px] text-primary-vivid mt-1 bg-bg-void/80 border border-primary-vivid/30 px-1 rounded">
-            NAV-ZENITH
-          </span>
-        </div>
-      </motion.div>
-    </div>
-  );
-}
-
 export default function Home() {
+  const { satellites, disasters } = useMissionData();
+
   const capabilities = [
     {
       icon: Radio,
@@ -427,7 +288,7 @@ export default function Home() {
 
           {/* Hero Right Content (Interactive Globe) */}
           <div className="lg:col-span-5 flex justify-center items-center">
-            <EarthGlobe />
+            <EarthGlobe satellites={satellites} disasters={disasters} showControls={false} />
           </div>
         </div>
       </main>

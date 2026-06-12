@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Moon, Star, Compass, Info, Users, Clock, Globe2, X } from "lucide-react";
+import { EarthGlobe } from "@/components/globe/earth-globe";
 
 export interface CelestialObject {
   id: string;
@@ -239,20 +240,32 @@ export function SkyDomeVisualizer({
       
       {/* EARTH VIEW */}
       {mode === "earth" && (
-        <div className="relative flex flex-col items-center justify-center font-mono">
-          <span className="absolute top-4 left-4 text-[9px] text-text-secondary">EARTH CONSTELLATION OVERLAY</span>
-          
-          <div className="w-72 h-72 rounded-full bg-gradient-to-br from-[#0c1b40] to-[#04081c] border border-primary/30 flex items-center justify-center relative overflow-hidden shadow-[inset_0_0_30px_rgba(79,70,229,0.3)]">
-            {/* Simple Earth grid meridians */}
-            <div className="absolute inset-0 opacity-20 bg-[linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:20px_20px]" />
-            {/* ISS Orbit line representation */}
-            <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100">
-              <ellipse cx="50" cy="50" rx="46" ry="18" fill="none" stroke="rgba(0, 229, 255, 0.4)" strokeWidth="0.5" className="origin-center animate-orbit-rotate" />
-              {/* Moon orbit */}
-              <ellipse cx="50" cy="50" rx="60" ry="24" fill="none" stroke="rgba(139, 92, 246, 0.2)" strokeWidth="0.5" />
-            </svg>
-            <div className="w-2.5 h-2.5 bg-status-accent rounded-full animate-ping" />
-          </div>
+        <div className="relative flex flex-col items-center justify-center font-mono w-full max-w-lg">
+          <span className="absolute top-4 left-4 text-[9px] text-text-secondary z-20">EARTH ORBITAL PATH OVERLAY</span>
+          <EarthGlobe
+            satellites={[
+              { id: "iss", name: "ISS Tracker", status: "nominal", altitude: 408, velocity: 7.66, inclination: 51.6, latitude: 15, longitude: 80, signalStrength: 100 }
+            ]}
+            layers={{
+              satellites: true,
+              debris: false,
+              orbits: true,
+              disasters: false,
+              assets: false
+            }}
+            onSelectSatellite={() => onSelectObject({
+              id: "iss",
+              name: "ISS Tracker",
+              category: "iss",
+              classification: "Space Station",
+              distance: "408 KM",
+              magnitude: "-5.0",
+              discovery: "1998",
+              description: "The International Space Station is a co-operative space laboratory orbiting Earth.",
+              crew: ["S. Williams", "B. Wilmore", "M. Barratt", "M. Dominick", "J. Epps", "A. Grebenkin", "N. Kononenko"],
+              experiment: "Microgravity plant biology and fluid dynamics sync.",
+            })}
+          />
         </div>
       )}
 
@@ -264,8 +277,8 @@ export function SkyDomeVisualizer({
           {/* Semicircular dome */}
           <div className="w-80 h-80 rounded-full border border-primary/30 bg-gradient-to-t from-[#020514] via-[#0b061e] to-[#140b2b] relative overflow-hidden shadow-[inset_0_0_50px_rgba(139,92,246,0.3)] flex items-center justify-center">
             
-            {/* Constellation Star dots */}
-            <svg className="absolute inset-0 w-full h-full cursor-pointer" viewBox="0 0 100 100">
+            {/* Constellation Star dots - Added slow infinite rotate animation */}
+            <svg className="absolute inset-0 w-full h-full cursor-pointer animate-orbit-rotate" style={{ animationDuration: "160s" }} viewBox="0 0 100 100">
               {/* Stars representation */}
               <circle cx="30" cy="30" r="1.5" fill="#fff" className="animate-pulse" />
               <circle cx="70" cy="40" r="1.2" fill="#fff" />
@@ -323,40 +336,77 @@ export function SkyDomeVisualizer({
             {/* Center Sun */}
             <div className="w-8 h-8 rounded-full bg-status-warning shadow-[0_0_20px_var(--status-warning)] z-10" />
 
-            {/* Orbit pathways */}
-            <div className="absolute w-28 h-28 border border-white/5 rounded-full" />
-            <div className="absolute w-44 h-44 border border-white/5 rounded-full" />
-            <div className="absolute w-60 h-60 border border-white/5 rounded-full" />
+            {/* Venus Orbit Ring & Rotating Planet */}
+            <div className="absolute w-28 h-28 border border-white/5 rounded-full animate-spin" style={{ animationDuration: "25s", transformOrigin: "center" }}>
+              <div
+                onClick={() => onSelectObject({
+                  id: "p-venus",
+                  name: "Venus",
+                  category: "planet",
+                  classification: "Terrestrial Planet",
+                  distance: "108M KM",
+                  magnitude: "-4.6",
+                  discovery: "Ancient",
+                  description: "The second planet from the Sun. Venus is the hottest planet in our solar system.",
+                })}
+                className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-status-warning border border-status-warning rounded-full cursor-pointer"
+                title="Venus"
+              />
+            </div>
 
-            {/* Planet Earth */}
-            <div
-              onClick={() => onSelectObject({
-                id: "earth-cel",
-                name: "Earth",
-                category: "planet",
-                classification: "Terrestrial Planet",
-                distance: "0 KM",
-                magnitude: "N/A",
-                discovery: "Ancient",
-                description: "Our home planet, third from the Sun, and the only known harbor of life.",
-              })}
-              className="absolute left-[calc(50%+45px)] w-3 h-3 bg-status-accent border border-status-accent rounded-full cursor-pointer animate-pulse"
-            />
+            {/* Earth Orbit Ring & Rotating Planet */}
+            <div className="absolute w-44 h-44 border border-white/5 rounded-full animate-spin" style={{ animationDuration: "35s", transformOrigin: "center" }}>
+              <div
+                onClick={() => onSelectObject({
+                  id: "earth-cel",
+                  name: "Earth",
+                  category: "planet",
+                  classification: "Terrestrial Planet",
+                  distance: "0 KM",
+                  magnitude: "N/A",
+                  discovery: "Ancient",
+                  description: "Our home planet, third from the Sun, and the only known harbor of life.",
+                })}
+                className="absolute top-0 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-status-accent border border-status-accent rounded-full cursor-pointer animate-pulse"
+                title="Earth"
+              />
+            </div>
 
-            {/* Planet Mars */}
-            <div
-              onClick={() => onSelectObject({
-                id: "p-mars",
-                name: "Mars",
-                category: "planet",
-                classification: "Terrestrial Planet",
-                distance: "225M KM",
-                magnitude: "-1.5",
-                discovery: "Ancient",
-                description: "The fourth planet from the Sun, and a primary destination for deep-space science.",
-              })}
-              className="absolute top-[calc(50%-80px)] w-2.5 h-2.5 bg-status-critical rounded-full cursor-pointer"
-            />
+            {/* Mars Orbit Ring & Rotating Planet */}
+            <div className="absolute w-60 h-60 border border-white/5 rounded-full animate-spin" style={{ animationDuration: "50s", transformOrigin: "center" }}>
+              <div
+                onClick={() => onSelectObject({
+                  id: "p-mars",
+                  name: "Mars",
+                  category: "planet",
+                  classification: "Terrestrial Planet",
+                  distance: "225M KM",
+                  magnitude: "-1.5",
+                  discovery: "Ancient",
+                  description: "The fourth planet from the Sun, and a primary destination for deep-space science.",
+                })}
+                className="absolute top-0 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-status-critical border border-status-critical rounded-full cursor-pointer"
+                title="Mars"
+              />
+            </div>
+
+            {/* Jupiter Orbit Ring & Rotating Planet */}
+            <div className="absolute w-[300px] h-[300px] border border-white/5 rounded-full animate-spin" style={{ animationDuration: "80s", transformOrigin: "center" }}>
+              <div
+                onClick={() => onSelectObject({
+                  id: "p-jupiter",
+                  name: "Jupiter",
+                  category: "planet",
+                  classification: "Gas Giant",
+                  distance: "778M KM",
+                  magnitude: "-2.7",
+                  discovery: "Ancient",
+                  description: "The fifth planet from the Sun and the largest in the Solar System.",
+                })}
+                className="absolute top-0 left-1/2 -translate-x-1/2 w-4 h-4 bg-primary-vivid border border-primary-vivid rounded-full cursor-pointer"
+                title="Jupiter"
+              />
+            </div>
           </div>
         </div>
       )}
